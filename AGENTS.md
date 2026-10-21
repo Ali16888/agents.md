@@ -41,3 +41,15 @@ If you add or update dependencies remember to:
 Following these practices ensures that the agent-assisted development workflow stays
 fast and dependable.  When in doubt, restart the dev server rather than running the
 production build.
+
+## Cursor Cloud specific instructions
+
+This multi-repo environment installs dependencies for this site and a few sibling apps. Rerun install only when a lockfile changes.
+
+- This site uses `corepack pnpm install --frozen-lockfile` (pnpm 9.15.1) and `pnpm dev` (Next.js on port 3000). Typecheck with `pnpm exec tsc --noEmit`. `pnpm lint` runs `next lint`, which Next.js 16 treats as a directory path and fails. There is no `test` script.
+- `WorkBuddyGuide`: `npm ci`, `npm test`, and `npm run dev` (VitePress on port 5173).
+- `TrendRadar`: `uv sync`, then `uv run python -m mcp_server.server --transport http --host 0.0.0.0 --port 3333` (`/mcp`). The pinned fastmcp 2.12 imports `pydantic._internal._typing_extra.eval_type_backport`, which current pydantic removed. The environment install aliases that private name to `eval_type` inside the project virtualenv so the server can import.
+- `awesome-seedance-2-prompts`: `corepack pnpm install --frozen-lockfile`. `pnpm generate` needs `CMS_HOST` and `CMS_API_KEY`.
+- QwenPaw is checked out but not installed. Its source install builds the console and pulls a large Python stack, and chatting needs model credentials.
+
+On boot, tmux sessions `agents_md`, `workbuddy`, and `trendradar` start those three servers when the sessions are absent. Logs are `/tmp/cursor-dev-logs/<session>.log`.
